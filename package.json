@@ -1,0 +1,22 @@
+{
+  "name": "idlebox",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A TypeScript + Svelte framework for incremental/idle games with example games.",
+  "workspaces": [
+    "framework",
+    "games/*"
+  ],
+  "scripts": {
+    "install-all": "npm install",
+    "dev": "echo 'Run individual games with npm run dev in their folders'",
+    "build": "echo 'Run builds for individual games'",
+    "lint": "echo 'Add lint scripts in packages as needed'",
+    "format": "echo 'Add prettier formatting scripts in packages as needed'"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.0",
+    "prettier": "^3.8.0",
+    "eslint": "^8.50.0"
+  }
+}
