@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:engine": "vitest run engine/test"
   },
   "devDependencies": {
     "typescript": "^5.2.0",
