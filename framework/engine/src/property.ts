@@ -38,7 +38,7 @@ abstract class BaseProperty<T> implements Property<T> {
   }
 }
 
-export class InputProperty<T> extends BaseProperty<T> {
+export class ObjectInputProperty<T> extends BaseProperty<T> {
   private value: T;
 
   constructor(initialValue: T) {
@@ -56,7 +56,7 @@ export class InputProperty<T> extends BaseProperty<T> {
   }
 }
 
-export class NumberInputProperty extends InputProperty<number> implements NumberProperty {
+export class NumberInputProperty extends ObjectInputProperty<number> implements NumberProperty {
   modify(delta : number) : number {
     const result: number = this.get() + delta;
     this.set(result);
@@ -64,7 +64,7 @@ export class NumberInputProperty extends InputProperty<number> implements Number
   }
 }
 
-export class BooleanInputProperty extends InputProperty<boolean> implements BooleanProperty {
+export class BooleanInputProperty extends ObjectInputProperty<boolean> implements BooleanProperty {
   switch() : boolean {
     const result: boolean = !this.get();
     this.set(result);
@@ -72,7 +72,7 @@ export class BooleanInputProperty extends InputProperty<boolean> implements Bool
   }
 }
 
-export class StringInputProperty extends InputProperty<string> implements StringProperty {
+export class StringInputProperty extends ObjectInputProperty<string> implements StringProperty {
   append(s : string) : string {
     const result: string = this.get() + s;
     this.set(result);
@@ -80,18 +80,18 @@ export class StringInputProperty extends InputProperty<string> implements String
   }
 }
 
-export class OutputProperty<T> extends BaseProperty<T> implements InvalidationListener {
-  private dependencies: Property<any>[];
+export class ObjectOutputProperty<T> extends BaseProperty<T> implements InvalidationListener {
+  private dependencies: Property<any>[] = [];
   private valid: boolean = false;
   private computeValue: () => T;
   private cachedValue: T;
 
-  constructor(dependencies: Property<any>[], computeValue: () => T) {
+  constructor(dependencies: (undefined | Property<any>)[], computeValue: () => T) {
     super();
-    this.dependencies = dependencies;
+    dependencies.forEach((e) => {if (typeof e != undefined) {this.dependencies.push(e as Property<any>)}})
     this.computeValue = computeValue;
     this.cachedValue = computeValue();
-    dependencies.forEach((dep) => dep.addListener(this));
+    this.dependencies.forEach((dep) => dep.addListener(this));
   }
 
   get(): T {
@@ -120,9 +120,8 @@ export class OutputProperty<T> extends BaseProperty<T> implements InvalidationLi
 
 }
 
-export class NumberOutputProperty extends OutputProperty<number> implements NumberProperty {}
+export class NumberOutputProperty extends ObjectOutputProperty<number> implements NumberProperty {}
 
-export class BooleanComputedProperty extends OutputProperty<boolean> implements BooleanProperty {}
+export class BooleanOutputProperty extends ObjectOutputProperty<boolean> implements BooleanProperty {}
 
-export class StringComputedProperty extends OutputProperty<string> implements StringProperty {}
-
+export class StringOutputProperty extends ObjectOutputProperty<string> implements StringProperty {}
