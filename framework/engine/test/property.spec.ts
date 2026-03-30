@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { SimpleProperty, BoundProperty } from "../src/property";
+import { NumberInputProperty, NumberOutputProperty } from "../src/property";
 
 describe("Property system", () => {
   it("SimpleProperty get/set and invalidation", () => {
-    const p = new SimpleProperty(1);
+    const p = new NumberInputProperty(1);
     let invalidated = false;
     p.addListener({
       invalidate: () => {
@@ -16,10 +16,10 @@ describe("Property system", () => {
   });
 
   it("BoundProperty computes and invalidates", () => {
-    const a = new SimpleProperty(1);
-    const b = new SimpleProperty(10);
-    const doubleA = new BoundProperty([a], () => a.get() * 2);
-    const sum2ab = new BoundProperty(
+    const a = new NumberInputProperty(1);
+    const b = new NumberInputProperty(10);
+    const doubleA = new NumberOutputProperty([a], () => a.get() * 2);
+    const sum2ab = new NumberOutputProperty(
       [doubleA, b],
       () => doubleA.get() + b.get(),
     );

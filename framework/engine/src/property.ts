@@ -7,14 +7,24 @@ export interface InvalidationListener {
 
 export interface Property<T> {
   get(): T;
+  isValid(): boolean;
   addListener(listener: InvalidationListener): void;
   removeListener(listener: InvalidationListener): void;
+  notifyListeners(): void;
 }
+
+export interface NumberProperty extends Property<number> {}
+
+export interface BooleanProperty extends Property<boolean> {}
+
+export interface StringProperty extends Property<string> {}
 
 abstract class BaseProperty<T> implements Property<T> {
   abstract get(): T;
+  abstract isValid(): boolean;
 
   private listeners: InvalidationListener[] = [];
+
   addListener(listener: InvalidationListener): void {
     this.listeners.push(listener);
   }
@@ -23,12 +33,12 @@ abstract class BaseProperty<T> implements Property<T> {
     this.listeners = this.listeners.filter((l) => l !== listener);
   }
 
-  _notifyListeners(): void {
+  notifyListeners(): void {
     this.listeners.forEach((listener) => listener.invalidate());
   }
 }
 
-export class SimpleProperty<T> extends BaseProperty<T> {
+export class InputProperty<T> extends BaseProperty<T> {
   private value: T;
 
   constructor(initialValue: T) {
@@ -36,28 +46,41 @@ export class SimpleProperty<T> extends BaseProperty<T> {
     this.value = initialValue;
   }
 
-  get(): T {
-    return this.value;
-  }
+  get = () => this.value;
+
+  isValid = () => true;
 
   set(newValue: T): void {
-    if (this.value !== newValue) {
-      this.value = newValue;
-      this._notifyListeners();
-    }
+    this.value = newValue;
+    this.notifyListeners();
   }
 }
 
-export class SimpleNumberProperty extends SimpleProperty<number> {
-  mod(delta: number): void {
-    this.set(this.get() + delta);
+export class NumberInputProperty extends InputProperty<number> implements NumberProperty {
+  modify(delta : number) : number {
+    const result: number = this.get() + delta;
+    this.set(result);
+    return result;
   }
 }
 
-export class BoundProperty<T>
-  extends BaseProperty<T>
-  implements InvalidationListener
-{
+export class BooleanInputProperty extends InputProperty<boolean> implements BooleanProperty {
+  switch() : boolean {
+    const result: boolean = !this.get();
+    this.set(result);
+    return result;
+  }
+}
+
+export class StringInputProperty extends InputProperty<string> implements StringProperty {
+  append(s : string) : string {
+    const result: string = this.get() + s;
+    this.set(result);
+    return result;
+  }
+}
+
+export class OutputProperty<T> extends BaseProperty<T> implements InvalidationListener {
   private dependencies: Property<any>[];
   private valid: boolean = false;
   private computeValue: () => T;
@@ -82,20 +105,24 @@ export class BoundProperty<T>
   invalidate(): void {
     if (this.valid) {
       this.valid = false;
-      this._notifyListeners();
+      this.notifyListeners();
     }
   }
 
-  isValid(): boolean {
-    return this.valid;
-  }
+  isValid = () => this.valid;
 
-  getCachedValue(): T {
-    return this.cachedValue;
-  }
+  getCachedValue = () => this.cachedValue;
 
-  forgetDependencies(): void {
+  delete(): void {
     this.dependencies.forEach((dep) => dep.removeListener(this));
     this.dependencies = [];
   }
+
 }
+
+export class NumberOutputProperty extends OutputProperty<number> implements NumberProperty {}
+
+export class BooleanComputedProperty extends OutputProperty<boolean> implements BooleanProperty {}
+
+export class StringComputedProperty extends OutputProperty<string> implements StringProperty {}
+
